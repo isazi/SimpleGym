@@ -5,50 +5,59 @@
     <div class="sp-title-bg" style="top:0;left:0;width:100%;height:16%;"></div>
     <div class="sp-title-text sp-t-m" style="top:3%;left:0;width:100%;text-align:center;">{{title}}</div>
 
-    <!-- Current exercise -->
-    <div class="sp-t-s cm-mid" style="top:18%;left:0;width:50%;text-align:center;">{{exercise}}</div>
-    <div class="sp-d-xs f-num" style="top:24%;left:0;width:50%;text-align:center;">
-      <eval input="/Zapp/{zapp_index}/Output/exercise" outputFormat="Count_Fourdigits" default="1"/>
+    <!-- Waiting state -->
+    <div id="waiting-label" class="sp-t-s cm-mid" style="top:38%;left:0;width:100%;text-align:center;">{{waiting}}</div>
+    <div id="waiting-timer" class="sp-d-m f-num cm-mid" style="top:45%;left:0;width:100%;text-align:center;">--</div>
+
+    <!-- Session fields -->
+    <div id="session-fields" style="left:0;top:0;width:100%;height:100%;visibility:hidden;">
+
+      <!-- Current exercise -->
+      <div class="sp-t-s cm-mid" style="top:18%;left:0;width:50%;text-align:center;">{{exercise}}</div>
+      <div class="sp-d-xs f-num" style="top:24%;left:0;width:50%;text-align:center;">
+        <eval input="/Zapp/{zapp_index}/Output/exercise" outputFormat="Count_Fourdigits" default="1"/>
+      </div>
+
+      <!-- Sets in the current exercise -->
+      <div class="sp-t-s cm-mid" style="top:18%;left:50%;width:50%;text-align:center;">{{sets}}</div>
+      <div class="sp-d-xs f-num" style="top:24%;left:50%;width:50%;text-align:center;">
+        <eval input="/Zapp/{zapp_index}/Output/exercise_sets" outputFormat="Count_Fourdigits" default="1"/>
+      </div>
+
+      <!-- Set in progress -->
+      <div id="set-label" class="sp-t-s cm-mid" style="top:38%;left:0;width:100%;text-align:center;visibility:hidden;">{{set}}</div>
+      <div id="set-timer" class="sp-d-m f-num cm-mid" style="top:45%;left:0;width:100%;text-align:center;visibility:hidden;">
+        <eval input="/Zapp/{zapp_index}/Output/set_elapsed" outputFormat="Duration_FourdigitsFixed" default="0'00"/>
+      </div>
+
+      <!-- Rest running -->
+      <div id="rest-label" class="sp-t-s sp-c-cyan" style="top:38%;left:0;width:100%;text-align:center;visibility:hidden;">{{rest}}</div>
+      <div id="rest-timer" class="sp-d-m f-num sp-c-cyan" style="top:45%;left:0;width:100%;text-align:center;visibility:hidden;">
+        <eval input="/Zapp/{zapp_index}/Output/rest" outputFormat="Duration_FourdigitsFixed" default="--"/>
+      </div>
+
+      <!-- Rest over -->
+      <div id="over-label" class="sp-t-s sp-c-orange" style="top:38%;left:0;width:100%;text-align:center;visibility:hidden;">{{restOver}}</div>
+      <div id="over-timer" class="sp-d-m f-num sp-c-orange" style="top:45%;left:0;width:100%;text-align:center;visibility:hidden;">+<eval input="/Zapp/{zapp_index}/Output/rest_overtime" outputFormat="Duration_FourdigitsFixed" default="0'00"/></div>
+
+      <!-- Total sets and session time. Kept clear of the round bezel. -->
+      <div class="sp-t-s cm-mid" style="top:68%;left:12%;width:38%;text-align:center;">{{total}}</div>
+      <div class="sp-d-xs f-num" style="top:73%;left:12%;width:38%;text-align:center;">
+        <eval input="/Zapp/{zapp_index}/Output/total_sets" outputFormat="Count_Fourdigits" default="0"/>
+      </div>
+
+      <div class="sp-t-s cm-mid" style="top:68%;left:50%;width:38%;text-align:center;">{{time}}</div>
+      <div class="sp-d-xs f-num" style="top:73%;left:50%;width:38%;text-align:center;">
+        <eval input="/Activity/Move/-1/Duration/Current" outputFormat="Duration_FourdigitsFixed" default="--"/>
+      </div>
+
     </div>
 
-    <!-- Sets in the current exercise -->
-    <div class="sp-t-s cm-mid" style="top:18%;left:50%;width:50%;text-align:center;">{{sets}}</div>
-    <div class="sp-d-xs f-num" style="top:24%;left:50%;width:50%;text-align:center;">
-      <eval input="/Zapp/{zapp_index}/Output/exercise_sets" outputFormat="Count_Fourdigits" default="0"/>
-    </div>
-
-    <!-- Ready state -->
-    <div id="ready-label" class="sp-t-s cm-mid" style="top:38%;left:0;width:100%;text-align:center;">{{ready}}</div>
-    <div id="ready-timer" class="sp-d-l f-num cm-mid" style="top:45%;left:0;width:100%;text-align:center;">--</div>
-
-    <!-- Rest running -->
-    <div id="rest-label" class="sp-t-s sp-c-cyan" style="top:38%;left:0;width:100%;text-align:center;visibility:hidden;">{{rest}}</div>
-    <div id="rest-timer" class="sp-d-l f-num sp-c-cyan" style="top:45%;left:0;width:100%;text-align:center;visibility:hidden;">
-      <eval input="/Zapp/{zapp_index}/Output/rest" outputFormat="Duration_FourdigitsFixed" default="--"/>
-    </div>
-
-    <!-- Rest over -->
-    <div id="over-label" class="sp-t-s sp-c-orange" style="top:38%;left:0;width:100%;text-align:center;visibility:hidden;">{{restOver}}</div>
-    <div id="over-timer" class="sp-d-l f-num sp-c-orange" style="top:45%;left:0;width:100%;text-align:center;visibility:hidden;">+<eval input="/Zapp/{zapp_index}/Output/rest_overtime" outputFormat="Duration_FourdigitsFixed" default="0'00"/></div>
-
-    <!-- Total sets and session time -->
-    <div class="sp-t-s cm-mid" style="top:68%;left:0;width:50%;text-align:center;">{{total}}</div>
-    <div class="sp-d-xs f-num" style="top:73%;left:0;width:50%;text-align:center;">
-      <eval input="/Zapp/{zapp_index}/Output/total_sets" outputFormat="Count_Fourdigits" default="0"/>
-    </div>
-
-    <div class="sp-t-s cm-mid" style="top:68%;left:50%;width:50%;text-align:center;">{{time}}</div>
-    <div class="sp-d-xs f-num" style="top:73%;left:50%;width:50%;text-align:center;">
-      <eval input="/Activity/Move/-1/Duration/Current" outputFormat="Duration_FourdigitsFixed" default="--"/>
-    </div>
-
-    <!-- Button hints and handlers -->
+    <!-- Button handling. Controls are documented in the store description,
+         not repeated on screen during a workout. -->
     <:if test="{{ HAS_ON_EVENT }}">
-      <div class="sp-b-s cm-mid" style="top:83%;left:0;width:100%;text-align:center;">{{lowerSet}}</div>
-      <div class="sp-b-s cm-mid" style="top:91%;left:0;width:100%;text-align:center;">{{holdTop}}</div>
-
       <userInput>
-        <pushButton name="down" enabledWhileDisplayOff
+        <pushButton name="down"
           onClick="$.put('/Zapp/{zapp_index}/Event', 1, null, 'int32');"
           onLongPressCancel="$.put('/Zapp/{zapp_index}/Event', 1, null, 'int32');"
           onLongPress="$.put('/Zapp/{zapp_index}/Event', 1, null, 'int32');"
@@ -58,9 +67,6 @@
           longPressDuration="1" />
       </userInput>
     </:if>
-    <:else>
-      <div class="sp-b-s cm-mid" style="top:88%;left:0;width:100%;text-align:center;">{{lapSet}}</div>
-    </:else>
 
   </div>
 </uiView>

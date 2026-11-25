@@ -1,13 +1,11 @@
 {
   "title": "SIMPLE GYM",
-  "ready": "READY",
+  "waiting": "WAITING",
+  "set": "SET",
   "rest": "REST",
   "restOver": "REST OVER",
   "exercise": "EX",
   "sets": "SETS",
   "total": "TOTAL",
-  "time": "TIME",
-  "lowerSet": "LOWER = LOG SET",
-  "holdTop": "HOLD TOP = NEXT EX",
-  "lapSet": "LAP = LOG SET"
+  "time": "TIME"
 }

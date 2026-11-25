@@ -5,7 +5,7 @@
   "description": "Sets and rest timer for gym sessions",
   "type": "feature",
   "usage": "workout",
-  "modificationTime": 1795593600,
+  "modificationTime": 1795639709,
   "languages": [
     "en"
   ],
@@ -24,13 +24,11 @@
   "out": [
     {
       "name": "exercise",
-      "log": true,
       "shownName": "Exercise",
       "format": "Count_Fourdigits"
     },
     {
       "name": "exercise_sets",
-      "log": true,
       "shownName": "Exercise sets",
       "format": "Count_Fourdigits"
     },
@@ -41,19 +39,21 @@
       "format": "Count_Fourdigits"
     },
     {
-      "name": "rest",
+      "name": "total_exercises",
       "log": true,
-      "shownName": "Rest remaining",
-      "format": "Duration_FourdigitsFixed"
+      "shownName": "Total exercises",
+      "format": "Count_Threedigits"
     },
     {
-      "name": "rest_display"
+      "name": "rest",
+      "shownName": "Rest remaining",
+      "format": "Duration_FourdigitsFixed"
     },
     {
       "name": "rest_overtime"
     },
     {
-      "name": "state"
+      "name": "set_elapsed"
     }
   ],
   "template": [

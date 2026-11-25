@@ -1,4 +1,4 @@
 {
-  "rest_seconds": "90",
-  "rest_alert": true
+  "rest_seconds": "30",
+  "rest_alert": "true"
 }
