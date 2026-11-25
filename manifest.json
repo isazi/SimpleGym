@@ -1,0 +1,92 @@
+{
+  "name": "Simple Gym",
+  "version": "1.0",
+  "author": "Alessio Sclocco",
+  "description": "Sets and rest timer for gym sessions",
+  "type": "feature",
+  "usage": "workout",
+  "modificationTime": 1795593600,
+  "languages": [
+    "en"
+  ],
+  "in": [
+    {
+      "name": "duration",
+      "source": "Activity/Move/-1/Duration/Current",
+      "type": "subscribe"
+    },
+    {
+      "name": "exerciseState",
+      "source": "Activity/Exercise/State",
+      "type": "subscribe"
+    }
+  ],
+  "out": [
+    {
+      "name": "exercise",
+      "log": true,
+      "shownName": "Exercise",
+      "format": "Count_Fourdigits"
+    },
+    {
+      "name": "exercise_sets",
+      "log": true,
+      "shownName": "Exercise sets",
+      "format": "Count_Fourdigits"
+    },
+    {
+      "name": "total_sets",
+      "log": true,
+      "shownName": "Total sets",
+      "format": "Count_Fourdigits"
+    },
+    {
+      "name": "rest",
+      "log": true,
+      "shownName": "Rest remaining",
+      "format": "Duration_FourdigitsFixed"
+    },
+    {
+      "name": "rest_display"
+    },
+    {
+      "name": "rest_overtime"
+    },
+    {
+      "name": "state"
+    }
+  ],
+  "template": [
+    {
+      "name": "t.html",
+      "displays": [
+        "n",
+        "o",
+        "q"
+      ]
+    },
+    {
+      "name": "t-legacy.html",
+      "displays": [
+        "s",
+        "m",
+        "l"
+      ]
+    }
+  ],
+  "settings": [
+    {
+      "shownName": "Rest length [s]",
+      "path": "rest_seconds",
+      "type": "int",
+      "min": 0,
+      "max": 600,
+      "inputType": "slider"
+    },
+    {
+      "shownName": "Rest alert",
+      "path": "rest_alert",
+      "type": "boolean"
+    }
+  ]
+}

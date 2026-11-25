@@ -1,0 +1,41 @@
+<uiView>
+  <div id="suuntoplus">
+
+    <!-- Title -->
+    <div class="sp-title-bg" style="top:0;left:0;width:100%;height:18%;"></div>
+    <div class="sp-title-text sp-t-m" style="top:3%;left:0;width:100%;text-align:center;">{{title}}</div>
+
+    <!-- Exercise number -->
+    <div class="sp-t-s cm-mid" style="top:22%;left:0;width:50%;text-align:center;">{{exercise}}</div>
+    <div class="sp-d-s f-num" style="top:28%;left:0;width:50%;text-align:center;">
+      <eval input="{zapp_tl_input}" outputFormat="{zapp_tl_format}" default="1"/>
+    </div>
+
+    <!-- Sets in the current exercise -->
+    <div class="sp-t-s cm-mid" style="top:22%;left:50%;width:50%;text-align:center;">{{sets}}</div>
+    <div class="sp-d-s f-num" style="top:28%;left:50%;width:50%;text-align:center;">
+      <eval input="{zapp_tr_input}" outputFormat="{zapp_tr_format}" default="0"/>
+    </div>
+
+    <!-- Rest remaining -->
+    <div class="sp-t-s cm-mid" style="top:50%;left:0;width:50%;text-align:center;">{{rest}}</div>
+    <div class="sp-d-s f-num" style="top:56%;left:0;width:50%;text-align:center;">
+      <eval input="{zapp_ml_input}" outputFormat="{zapp_ml_format}" default="--"/>
+    </div>
+
+    <!-- Total sets -->
+    <div class="sp-t-s cm-mid" style="top:50%;left:50%;width:50%;text-align:center;">{{total}}</div>
+    <div class="sp-d-s f-num" style="top:56%;left:50%;width:50%;text-align:center;">
+      <eval input="{zapp_mr_input}" outputFormat="{zapp_mr_format}" default="0"/>
+    </div>
+
+    <!-- Session duration -->
+    <div class="sp-d-xs f-num" style="top:78%;left:0;width:100%;text-align:center;">
+      <eval input="{zapp_bottom_input}" outputFormat="{zapp_bottom_format}" default="--"/>
+    </div>
+
+    <!-- Legacy watches use the normal lap button to log a set -->
+    <div class="sp-b-s cm-mid" style="top:90%;left:0;width:100%;text-align:center;">{{lapSet}}</div>
+
+  </div>
+</uiView>

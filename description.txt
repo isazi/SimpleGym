@@ -1,0 +1,28 @@
+Simple Gym
+
+Log sets and track rest without breaking your workout flow.
+
+Simple Gym turns your Suunto watch into a focused gym companion. One press of the lower button records a completed set, starts your rest countdown, and adds a lap to the workout. No menus, no exercise names, no rep counting — just the numbers that matter during a session.
+
+When rest reaches zero the watch beeps or vibrates once, then switches to REST OVER and counts up so you can see how long you have been resting. The countdown waits for your next set and restarts automatically.
+
+What you see:
+
+- Current exercise number and sets for that exercise
+- A large rest countdown: READY, REST, or REST OVER
+- Total sets and session duration
+- Clear button hints: lower button for a set, hold the top button for the next exercise
+
+After the workout, the Suunto app shows a compact summary: total sets, number of exercises used, and session time. The workout log includes exercise, exercise sets, total sets, and rest remaining.
+
+Set your rest length once in the Suunto app settings (0–600 seconds, default 90) and optionally turn the rest alert off. Rest timing follows the activity clock, so pausing the workout pauses the countdown too.
+
+Simple Gym is designed for UI2 Suunto watches with a responsive layout for n, o, and q displays, plus a minimal fallback for UI1 watches. On UI1 watches the normal lap button logs a set; exercise switching requires a UI2 watch with button event support.
+
+No GPS, no heart rate, no account, no network connection. Just sets and rest.
+
+---
+
+Short version (for the store summary field):
+
+A minimal SuuntoPlus gym app: one press logs a set, starts a rest countdown, creates a lap, and shows when rest is over.
