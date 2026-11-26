@@ -1,11 +1,7 @@
 {
   "title": "SIMPLE GYM",
-  "waiting": "WAITING",
-  "set": "SET",
-  "rest": "REST",
-  "restOver": "REST OVER",
   "exercise": "EX",
   "sets": "SETS",
   "total": "TOTAL",
-  "time": "TIME"
+  "rest": "REST"
 }

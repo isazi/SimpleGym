@@ -5,7 +5,7 @@
   "description": "Sets and rest timer for gym sessions",
   "type": "feature",
   "usage": "workout",
-  "modificationTime": 1795639709,
+  "modificationTime": 1795711413,
   "languages": [
     "en"
   ],
@@ -19,6 +19,11 @@
       "name": "exerciseState",
       "source": "Activity/Exercise/State",
       "type": "subscribe"
+    },
+    {
+      "name": "activityTimer",
+      "source": "Activity/ActivityTimer",
+      "type": "subscribe"
     }
   ],
   "out": [
@@ -31,6 +36,12 @@
       "name": "exercise_sets",
       "shownName": "Exercise sets",
       "format": "Count_Fourdigits"
+    },
+    {
+      "name": "state_code"
+    },
+    {
+      "name": "display_timer"
     },
     {
       "name": "total_sets",

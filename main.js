@@ -11,7 +11,13 @@ var restAlert = true;
 var alerted = false;
 var currentDuration = 0;
 var started = false;
+var paused = false;
 var viewState = 3;
+var TOP_EVENT_GAP_MS = 950;
+var lastTopEventMs = null;
+var lastTopEventDuration = null;
+var STATE_LABELS = ["SET", "REST", "OVER", "WAIT"];
+var STATE_COLORS = ["css:.c-green", "css:.c-cyan", "css:.c-orange", "css:.c-grey"];
 
 var num = function(value, fallback) {
   var n = Number(value);
@@ -21,6 +27,22 @@ var num = function(value, fallback) {
 var clamp = function(value, low, high, fallback) {
   var n = num(value, fallback);
   return n < low ? low : (n > high ? high : n);
+};
+
+var updateStateText = function(state) {
+  if ('{{ IS_UI2 }}' != '1') {
+    return;
+  }
+  if (typeof setText === "function") {
+    setText("#state_text", STATE_LABELS[state] || "WAIT");
+  }
+  if (typeof setStyle === "function" && typeof getStyle === "function") {
+    setStyle(
+      "#state_text",
+      "color",
+      getStyle(STATE_COLORS[state] || "css:.c-grey", "color", true)
+    );
+  }
 };
 
 var setDuration = function(input) {
@@ -81,6 +103,24 @@ var isRunning = function(input) {
   return state !== state || state === 1;
 };
 
+var isDuplicateTopEvent = function(input) {
+  var now = input && input.activityTimer !== undefined ? Number(input.activityTimer) : NaN;
+  if (now === now) {
+    if (lastTopEventMs !== null && now >= lastTopEventMs && now - lastTopEventMs < TOP_EVENT_GAP_MS) {
+      return true;
+    }
+    lastTopEventMs = now;
+    return false;
+  }
+
+  if (lastTopEventDuration !== null && currentDuration >= lastTopEventDuration &&
+      currentDuration - lastTopEventDuration < 2) {
+    return true;
+  }
+  lastTopEventDuration = currentDuration;
+  return false;
+};
+
 var resetSession = function() {
   exercise = 1;
   counts = [];
@@ -89,6 +129,8 @@ var resetSession = function() {
   restStart = 0;
   alerted = false;
   started = false;
+  lastTopEventMs = null;
+  lastTopEventDuration = null;
 };
 
 var saveSession = function() {
@@ -166,6 +208,14 @@ var triggerLap = function() {
   }
 };
 
+var beginSet = function(duration) {
+  resting = false;
+  setStart = duration;
+  restStart = 0;
+  alerted = false;
+  saveSession();
+};
+
 var startSession = function() {
   if (started) {
     return;
@@ -173,11 +223,7 @@ var startSession = function() {
   started = true;
   exercise = 1;
   counts[0] = 1;
-  resting = false;
-  setStart = currentDuration;
-  restStart = 0;
-  alerted = false;
-  saveSession();
+  beginSet(currentDuration);
 };
 
 var startNextSet = function(duration) {
@@ -186,11 +232,7 @@ var startNextSet = function(duration) {
     return;
   }
   counts[exercise - 1] = getExerciseSets() + 1;
-  resting = false;
-  setStart = duration;
-  restStart = 0;
-  alerted = false;
-  saveSession();
+  beginSet(duration);
   triggerLap();
 };
 
@@ -202,11 +244,7 @@ var nextExercise = function() {
   if (exercise < MAX_EXERCISE) {
     exercise += 1;
     counts[exercise - 1] = 1;
-    resting = false;
-    setStart = currentDuration;
-    restStart = 0;
-    alerted = false;
-    saveSession();
+    beginSet(currentDuration);
   }
 };
 
@@ -225,26 +263,19 @@ var completeSet = function(duration) {
   triggerLap();
 };
 
-var uiViews = [
-  'waiting-label', 'waiting-timer', 'session-fields',
-  'set-label', 'set-timer',
-  'rest-label', 'rest-timer',
-  'over-label', 'over-timer'
-];
-var uiStates = [3, 3, 4, 0, 0, 1, 1, 2, 2];
-
-var applyUiState = function(state) {
-  if ('{{ IS_UI2 }}' != '1') {
-    return;
+// Lower presses and the lap-only fallback follow the same sequence:
+// start, end a set, or start the next set.
+var handleLowerPress = function(duration, output) {
+  if (!started) {
+    startSession();
   }
-  try {
-    for (var i = 0; i < uiViews.length; i++) {
-      var visible = uiStates[i] === 4 ? state !== 3 : uiStates[i] === state;
-      setStyle('#' + uiViews[i], 'visibility', visible ? 'VISIBLE' : 'HIDDEN');
-    }
+  else if (resting) {
+    startNextSet(duration);
   }
-  catch (e) {
+  else {
+    completeSet(duration);
   }
+  computeAndSet(currentDuration, output);
 };
 
 var computeAndSet = function(duration, output) {
@@ -252,6 +283,7 @@ var computeAndSet = function(duration, output) {
   var rest = null;
   var overtime = 0;
   var setElapsed = 0;
+  var displayTimer = 0;
 
   if (started) {
     if (!resting) {
@@ -261,6 +293,7 @@ var computeAndSet = function(duration, output) {
         setElapsed = 0;
       }
       rest = setElapsed;
+      displayTimer = setElapsed;
     }
     else {
       var elapsed = duration - restStart;
@@ -274,6 +307,7 @@ var computeAndSet = function(duration, output) {
         if (rest < 1) {
           rest = 1;
         }
+        displayTimer = rest;
       }
       else {
         state = 2;
@@ -282,6 +316,7 @@ var computeAndSet = function(duration, output) {
           overtime = 0;
         }
         rest = overtime;
+        displayTimer = overtime;
         if (restAlert && !alerted) {
           try {
             playIndication("Interval");
@@ -296,6 +331,7 @@ var computeAndSet = function(duration, output) {
   }
 
   viewState = state;
+  updateStateText(state);
 
   if (output) {
     output.exercise = started ? exercise : 0;
@@ -305,9 +341,9 @@ var computeAndSet = function(duration, output) {
     output.rest = rest;
     output.rest_overtime = overtime;
     output.set_elapsed = setElapsed;
+    output.state_code = state;
+    output.display_timer = displayTimer;
   }
-
-  applyUiState(state);
 };
 
 function onLoad(input, output) {
@@ -329,14 +365,17 @@ function onExerciseStart(input, output) {
   setDuration(input);
   readSettings();
   resetSession();
+  paused = false;
   clearSession();
   computeAndSet(currentDuration, output);
 }
 
 function onExercisePause(input, output) {
+  paused = true;
 }
 
 function onExerciseContinue(input, output) {
+  paused = false;
 }
 
 function onExerciseEnd(input, output) {
@@ -347,20 +386,16 @@ function onEvent(input, output, eventId) {
   setDuration(input);
 
   var id = Number(eventId);
-
   if (id === 1) {
-    if (!started || !isRunning(input)) {
+    if (paused || !started) {
       return;
     }
-    if (resting) {
-      startNextSet(currentDuration);
-    }
-    else {
-      completeSet(currentDuration);
-    }
-    computeAndSet(currentDuration, output);
+    handleLowerPress(currentDuration, output);
   }
   else if (id === 2) {
+    if (paused || isDuplicateTopEvent(input)) {
+      return;
+    }
     nextExercise();
     computeAndSet(currentDuration, output);
   }
@@ -370,26 +405,12 @@ function onLap(input, output) {
   if ('{{ HAS_ON_EVENT }}' == '1') {
     return;
   }
-  if (!isRunning(input)) {
+  if (paused || !isRunning(input)) {
     return;
   }
 
   setDuration(input);
-
-  // Lap-only watches have no top-button start action: the first lap
-  // starts set 1, then laps alternate between ending a set and starting
-  // the next one.
-  if (!started) {
-    startSession();
-  }
-  else if (resting) {
-    startNextSet(currentDuration);
-  }
-  else {
-    completeSet(currentDuration);
-  }
-
-  computeAndSet(currentDuration, output);
+  handleLowerPress(currentDuration, output);
 }
 
 function evaluate(input, output) {

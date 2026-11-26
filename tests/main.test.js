@@ -14,6 +14,13 @@ var localStorage = {
 var laps = 0;
 var alerts = 0;
 var styleCalls = [];
+var textCalls = [];
+var stateColors = {
+  'css:.c-green': 'green',
+  'css:.c-cyan': 'cyan',
+  'css:.c-orange': 'orange',
+  'css:.c-grey': 'grey'
+};
 var $ = {
   put: function(path, value) {
     if (path === '/Activity/Trigger') { laps += 1; }
@@ -21,6 +28,24 @@ var $ = {
 };
 function playIndication(name) { alerts += 1; }
 function setStyle(id, prop, value) { styleCalls.push([id, prop, value]); }
+function getStyle(target) { return stateColors[target] || 'orange'; }
+function setText(id, text) { textCalls.push([id, text]); }
+function lastText() { return textCalls.length ? textCalls[textCalls.length - 1][1] : null; }
+function lastStateColor() {
+  for (var i = styleCalls.length - 1; i >= 0; i -= 1) {
+    if (styleCalls[i][0] === '#state_text' && styleCalls[i][1] === 'color') {
+      return styleCalls[i][2];
+    }
+  }
+  return null;
+}
+function visibilityCallCount() {
+  var count = 0;
+  for (var i = 0; i < styleCalls.length; i += 1) {
+    if (styleCalls[i][1] === 'visibility') { count += 1; }
+  }
+  return count;
+}
 
 function out() {
   return {
@@ -30,7 +55,9 @@ function out() {
     total_exercises: 0,
     rest: null,
     rest_overtime: null,
-    set_elapsed: null
+    set_elapsed: null,
+    state_code: 3,
+    display_timer: 0
   };
 }
 function assert(cond, msg) {
@@ -46,7 +73,8 @@ function compile(ui1, ui2, event, silent) {
   globalEval(code);
 }
 function top(o, duration) {
-  onEvent({ duration: duration || 0, exerciseState: 1 }, o, 2);
+  var t = duration || 0;
+  onEvent({ duration: t, activityTimer: t * 1000, exerciseState: 1 }, o, 2);
 }
 function lower(o, duration) {
   onEvent({ duration: duration, exerciseState: 1 }, o, 1);
@@ -62,6 +90,9 @@ var o = out();
 onLoad({ duration: 0, exerciseState: 0 }, o);
 evaluate({ duration: 0, exerciseState: 1 }, o);
 assert(viewState === 3, 'waiting state before first top press');
+assert(o.state_code === 3 && o.display_timer === 0, 'waiting state and zero timer are output');
+assert(lastText() === 'WAIT', 'state text shows WAIT while waiting');
+assert(lastStateColor() === 'grey', 'WAIT uses grey');
 assert(o.exercise === 0 && o.exercise_sets === 0 && o.total_sets === 0 && o.total_exercises === 0, 'waiting counters are blank');
 assert(o.rest === null && o.rest_overtime === 0 && o.set_elapsed === 0, 'waiting has no running timer');
 lower(o, 5);
@@ -71,35 +102,63 @@ assert(o.total_sets === 0 && laps === 0, 'lower press is ignored while waiting')
 top(o, 10);
 assert(o.exercise === 1 && o.exercise_sets === 1 && o.total_sets === 1 && o.total_exercises === 1, 'top press starts at exercise 1 set 1');
 assert(viewState === 0 && o.set_elapsed === 0, 'set timer starts at zero');
-assert(styleCalls.some(function(c) { return c[0] === '#set-label' && c[2] === 'VISIBLE'; }), 'UI2 shows the set view');
-assert(styleCalls.some(function(c) { return c[0] === '#rest-label' && c[2] === 'HIDDEN'; }), 'UI2 hides the rest view during a set');
+assert(o.state_code === 0 && o.display_timer === 0, 'UI2 outputs the set state and timer');
+assert(lastText() === 'SET', 'state text switches to SET on first top press');
+assert(lastStateColor() === 'green', 'SET uses green');
+var visibilityCallsBeforeEvaluate = visibilityCallCount();
 evaluate({ duration: 15, exerciseState: 1 }, o);
+assert(visibilityCallCount() === visibilityCallsBeforeEvaluate, 'UI2 does not use visibility scripting');
 assert(viewState === 0 && o.set_elapsed === 5, 'set timer counts up open ended');
+assert(o.state_code === 0 && o.display_timer === 5, 'set timer output counts up');
 assert(o.rest === 5 && o.rest_overtime === 0 && viewState === 0, 'rest view is hidden during a set');
 assert(getSummaryOutputs({ duration: 15 }, o).length === 2, 'started set appears in the summary');
+
+onExercisePause({}, o);
+var exerciseWhilePaused = o.exercise;
+var setsWhilePaused = o.exercise_sets;
+var totalWhilePaused = o.total_sets;
+laps = 0;
+lower(o, 16);
+assert(o.exercise_sets === setsWhilePaused && o.total_sets === totalWhilePaused, 'paused lower press does not change SETS or TOTAL');
+assert(viewState === 0 && laps === 0, 'paused lower press does not start rest or create a lap');
+top(o, 16);
+assert(o.exercise === exerciseWhilePaused && o.total_sets === totalWhilePaused, 'paused top long press does not advance exercise');
+assert(viewState === 0 && laps === 0, 'paused top long press does not change state or create a lap');
+onExerciseContinue({}, o);
 
 // --- first lower press ends the set and starts rest --------------------
 lower(o, 20);
 assert(o.total_sets === 1 && o.exercise_sets === 1, 'ending set 1 keeps SETS at 1 during rest');
 assert(viewState === 1 && o.rest === 90, 'rest starts after set 1');
+assert(o.state_code === 1 && o.display_timer === 90, 'rest countdown output starts at target');
+assert(lastText() === 'REST', 'state text switches to REST on set end');
+assert(lastStateColor() === 'cyan', 'REST uses cyan');
 assert(o.set_elapsed === 0, 'set timer stops during rest');
 assert(laps === 1, 'one lap per completed set');
 
 evaluate({ duration: 50, exerciseState: 1 }, o);
 assert(viewState === 1 && o.rest === 60, 'rest counts down');
+assert(o.state_code === 1 && o.display_timer === 60, 'rest countdown output counts down');
 
 evaluate({ duration: 110, exerciseState: 1 }, o);
 assert(viewState === 2 && o.rest === 0 && o.rest_overtime === 0, 'rest over at target');
+assert(o.state_code === 2 && o.display_timer === 0, 'rest over output appears at zero');
+assert(lastText() === 'OVER', 'state text switches to OVER after rest ends');
+assert(lastStateColor() === 'orange', 'OVER uses orange');
 assert(alerts === 1, 'alert fired once at rest end');
 
 evaluate({ duration: 115, exerciseState: 1 }, o);
 assert(viewState === 2 && o.rest_overtime === 5 && o.rest === 5, 'overtime counts up');
+assert(o.display_timer === 5, 'overtime output counts up');
 assert(alerts === 1, 'alert does not repeat');
 
 // --- second lower press starts set 2 -----------------------------------
 lower(o, 120);
 assert(o.exercise_sets === 2 && o.total_sets === 2, 'second press starts set 2 and TOTAL follows immediately');
 assert(viewState === 0 && o.set_elapsed === 0 && o.rest === 0, 'set 2 has an open-ended timer, no rest timer');
+assert(o.state_code === 0 && o.display_timer === 0, 'set 2 output resets');
+assert(lastText() === 'SET', 'state text switches back to SET on next set');
+assert(lastStateColor() === 'green', 'next SET returns to green');
 assert(laps === 2, 'starting the next set also creates a lap');
 
 evaluate({ duration: 126, exerciseState: 1 }, o);
@@ -216,7 +275,7 @@ assert(exercise === 999 && getExerciseSets() === 1, 'exercise counter clamps at 
 resetStore();
 store.rest_seconds = '90';
 store.rest_alert = 'true';
-laps = 0; alerts = 0; styleCalls = [];
+laps = 0; alerts = 0; styleCalls = []; textCalls = [];
 compile(true, false, false, false);
 o = out();
 onLoad({ duration: 0, exerciseState: 0 }, o);
@@ -226,6 +285,12 @@ assert(ui.template === 't-legacy', 'UI1 uses legacy template');
 assert(ui.tl.input === 'output/exercise', 'UI1 fields defined');
 onLap({ duration: 10, exerciseState: 1 }, o);
 assert(o.exercise_sets === 1 && o.total_sets === 1 && viewState === 0, 'first UI1 lap starts set 1');
+onExercisePause({}, o);
+var ui1SetsPaused = o.exercise_sets;
+var ui1TotalPaused = o.total_sets;
+onLap({ duration: 12, exerciseState: 1 }, o);
+assert(o.exercise_sets === ui1SetsPaused && o.total_sets === ui1TotalPaused && viewState === 0, 'UI1 lap is ignored while paused');
+onExerciseContinue({}, o);
 evaluate({ duration: 15, exerciseState: 1 }, o);
 assert(o.set_elapsed === 5, 'UI1 set timer counts up');
 onLap({ duration: 20, exerciseState: 1 }, o);
@@ -234,6 +299,7 @@ onLap({ duration: 30, exerciseState: 1 }, o);
 assert(o.total_sets === 2 && o.exercise_sets === 2 && viewState === 0, 'third UI1 lap starts set 2');
 assert(laps === 0, 'UI1 does not trigger an extra lap');
 assert(styleCalls.length === 0, 'UI1 never calls setStyle');
+assert(textCalls.length === 0, 'UI1 never calls setText');
 
 // --- UI2 without onEvent falls back to lap -----------------------------
 resetStore();
@@ -249,7 +315,7 @@ onLap({ duration: 20, exerciseState: 1 }, o);
 onLap({ duration: 30, exerciseState: 1 }, o);
 assert(o.total_sets === 2 && o.exercise_sets === 2 && viewState === 0, 'UI2 lap fallback alternates set and rest');
 assert(laps === 0, 'UI2 lap fallback does not trigger an extra lap');
-assert(styleCalls.length > 0, 'UI2 lap fallback still updates the view state');
+assert(o.state_code === 0, 'UI2 lap fallback updates the state code');
 
 // --- non-object / missing storage --------------------------------------
 resetStore();
@@ -337,6 +403,19 @@ var noRestore = out();
 onLoad({ duration: 20, exerciseState: 1 }, noRestore);
 assert(noRestore.total_sets === 0 && viewState === 3, 'failed save leaves nothing to restore');
 localStorage.setObject = function(k, v) { store[k] = v; };
+
+// --- duplicate long-press callbacks are collapsed -----------------------
+resetStore();
+store.rest_seconds = '30';
+store.rest_alert = 'true';
+compile(false, true, true, true);
+o = out();
+onLoad({ duration: 0, exerciseState: 0 }, o);
+onEvent({ duration: 10, activityTimer: 10000, exerciseState: 1 }, o, 2);
+onEvent({ duration: 10, activityTimer: 10400, exerciseState: 1 }, o, 2);
+assert(o.exercise === 1 && o.total_sets === 1, 'long press start and full events count once');
+onEvent({ duration: 12, activityTimer: 12000, exerciseState: 1 }, o, 2);
+assert(o.exercise === 2 && o.total_sets === 2, 'a later long press still advances the exercise');
 
 if (failures === 0) {
   print('ALL TESTS PASSED');

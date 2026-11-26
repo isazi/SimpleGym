@@ -9,16 +9,18 @@ When rest reaches zero the watch beeps or vibrates once, then switches to REST O
 What you see:
 
 - Current exercise number and current set
-- A large state and timer: WAITING, SET with a count-up timer, REST with a countdown, or REST OVER with overtime
-- Total sets started and session duration
+- A colored state above a large timer: WAIT in grey, SET in green with a count-up timer, REST in cyan with a countdown, or OVER in orange with overtime
+- Current exercise, sets in that exercise, and total sets started
 
 Controls:
 
-- Hold the top button to start at EX 1 / SET 1, and later to move to the next exercise.
+- Hold the top button to start at EX 1 / SET 1, and later to move to the next exercise. A short top press keeps the watch's normal pause / continue behaviour.
 - During a set, press the lower button to end it and restart the rest timer.
 - During rest, press the lower button to start the next set and clear the rest timer.
+- Presses while the workout is paused are ignored; continue the workout first.
 - On UI1 watches, the first lap starts EX 1 / SET 1; later laps alternate between ending a set and starting the next.
 - The workout screen intentionally shows no button reminders.
+- Simple Gym cannot end an exercise: finish your workout with the watch's normal exercise-end flow.
 
 After the workout, the Suunto app shows a compact summary: sets started and total exercises used. The workout log saves the same two totals: total sets and total exercises.
 

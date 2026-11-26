@@ -8,17 +8,21 @@ Simple Gym is deliberately minimal: no exercise names, no weight or rep entry, n
 
 | Action | UI2 watches | UI1 / lap-only watches |
 | --- | --- | --- |
+| Top button short press | Watch pause / continue (unchanged) | Watch pause / continue |
 | Top button long press | Starts at EX 1 / SET 1, then advances to the next exercise | — |
 | Lower press during a set | Ends the set, starts rest, creates a lap; SETS stays unchanged | — |
 | Lower press during rest | Ends rest, starts the next set timer, advances SETS, creates a lap | — |
 | Lower button long press | Same as a lower press | — |
 | Lap button | — | First lap starts EX 1 / SET 1; then alternates ending a set and starting the next |
+| End the exercise | Not available in the app; use the watch's normal exercise-end flow | Same |
 
 The first set of every exercise is 1, never 0. The exercise number only moves forward. There is no upper limit in normal use; the value is capped at 999 for display safety. Sets are counted separately for every exercise number. TOTAL counts sets as soon as they start, so it always keeps up with SETS.
 
-A lower-button press while `WAITING` is ignored: use the top long press to start. Consecutive presses are accepted, even in quick succession. Presses while the workout is idle, in pre-start, or paused are ignored.
+A lower-button press while `WAITING` is ignored: use the top long press to start. Short top presses are left to the watch and keep their normal pause / continue behaviour. Consecutive presses are accepted, even in quick succession. Presses while the workout is idle, in pre-start, or paused are ignored.
 
 Button events are handled by the Simple Gym screen itself. Keep that screen visible and awake while you train; on other watch screens the lower button keeps its normal behaviour, and lower-button logging does not wake the display.
+
+On Suunto Vertical 2, `/Activity/Exercise/State` was observed not to report `1` during an active workout. Lower-button logging therefore relies on the app's own `started` flag and its own pause flag driven by `onExercisePause` / `onExerciseContinue`, rather than on that input value. A lower press while paused is ignored; continue the workout before logging another set.
 
 ## Timers
 
@@ -43,9 +47,14 @@ Button events are handled by the Simple Gym screen itself. Keep that screen visi
 
 UI2 watches (`n`, `o`, `q` displays):
 
-- Current exercise number and set number at the top.
-- Large state and timer in the center: `WAITING`, `SET` with its count-up timer, `REST` with the countdown, or `REST OVER` with overtime.
-- Total sets and session duration at the bottom.
+- Dark background (black in the watch's dark theme) to save battery.
+- Orange `SIMPLE GYM` title at the top, like other Suunto apps; no stripe or other header decoration.
+- State text centered above the timer: `SET` in green, `REST` in cyan, `OVER` in orange, and `WAIT` in grey.
+- The timer is the largest element on screen, using the full row width with the counters moved lower to make room.
+- One compact counts line: `EX`, `SETS`, and `TOT`. The shorter `TOT` label avoids wrapping on the small watch display.
+- The state label is written with the native `setText()` function into an existing text node, and its color is set with `setStyle()` using the watch theme's color tokens. No string output or formatter is used, avoiding the blank-screen problems those caused earlier.
+- Counter labels and values use explicit absolute positions because the watch renderer does not preserve the simulator's inline layout.
+- No session clock or numeric state code on the workout screen. All content is inset from the display edges.
 
 There are no button hints on the workout screen. Controls are documented in `description.txt` for the store and in the Controls table above. This assumes the controls are simple enough not to need constant reminders.
 
@@ -139,14 +148,13 @@ Simulator:
 
 - UI2 displays `q`, `o`, `n` and at least one UI1 display.
 - No on-screen button hints; controls are documented in the store description.
-- `WAITING` on load; lower-button press does nothing.
-- First top long press shows `SET` at EX 1 / SET 1 with a count-up timer starting at zero.
+- State `3 WAIT` on load; lower-button press does nothing.
+- First top long press shows state `0 SET` at EX 1 / SET 1 with a count-up timer starting at zero.
 - During a set there is no rest countdown; the set timer increases.
-- First lower-button press ends set 1, starts rest, and leaves SETS at 1.
+- First lower-button press ends set 1, starts rest, shows `1 REST`, and leaves SETS at 1.
 - Second lower-button press ends rest, starts the set 2 timer, and advances SETS to 2, even in quick succession.
 - Ending set 2 restarts rest and creates its own lap.
-- Rest alert plays once at zero.
-- REST OVER counts up until the next lower-button press.
+- Rest alert plays once at zero; state changes to `2 OVER` and its timer counts up until the next lower-button press.
 - Top long press advances the exercise, starts its set 1 timer, and preserves per-exercise counts.
 - Exercise cap at 999.
 - Rest length 0 and 600.
@@ -166,6 +174,7 @@ Real watch:
 
 ## Known limitations
 
+- There is no control to end an exercise from the Simple Gym screen. Use the watch's normal exercise-end flow; the app clears its session and writes the summary when the workout ends.
 - Exercise numbers only increase. If you overshoot, continue forward or end the session.
 - UI1 watches cannot switch exercises. Their single timer field shows set time during sets and rest time during rest, with no SET/REST label.
 - On UI1 watches every lap after the first ends or starts a set, so disable autolap for gym sessions.
