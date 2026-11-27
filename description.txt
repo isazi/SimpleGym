@@ -20,15 +20,10 @@ Controls:
 - Presses while the workout is paused are ignored; continue the workout first.
 - On UI1 watches, the first lap starts EX 1 / SET 1; later laps alternate between ending a set and starting the next.
 - The workout screen intentionally shows no button reminders.
-- Simple Gym cannot end an exercise: finish your workout with the watch's normal exercise-end flow.
 
 After the workout, the Suunto app shows a compact summary: sets started and total exercises used. The workout log saves the same two totals: total sets and total exercises.
 
 Set your rest length once in the Suunto app settings (0–600 seconds, default 30) and optionally turn the rest alert off. Rest timing follows the activity clock, so pausing the workout pauses the countdown too.
-
-Simple Gym is designed for UI2 Suunto watches with a responsive layout for n, o, and q displays, plus a minimal fallback for UI1 watches. Exercise switching requires a UI2 watch with button event support.
-
-No GPS, no heart rate, no account, no network connection. Just sets and rest.
 
 ---
 
